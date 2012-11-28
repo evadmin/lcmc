@@ -99,18 +99,24 @@ public final class Label extends Widget {
     private JLabel label = null;
 
     /** Prepares a new <code>Widget</code> object. */
-    public Widget(final String selectedValue,
-                  final Object[] items,
-                  final Unit[] units,
-                  final Type type,
-                  final String regexp,
-                  final int width,
-                  final Map<String, String> abbreviations,
-                  final AccessMode enableAccessMode,
-                  final MyButton fieldButton) {
-        super();
-        newComp = getLabelField(selectedValue);
-        processAccessMode();
+    public Label(final String selectedValue,
+                 final Object[] items,
+                 final Unit[] units,
+                 final Type type,
+                 final String regexp,
+                 final int width,
+                 final Map<String, String> abbreviations,
+                 final AccessMode enableAccessMode,
+                 final MyButton fieldButton) {
+        super(selectedValue,
+              items,
+              units,
+              type,
+              regexp,
+              width,
+              abbreviations,
+              enableAccessMode,
+              fieldButton);
     }
 
     /** Returns whether this field is a check box. */
@@ -124,23 +130,6 @@ public final class Label extends Widget {
         return new JLabel(value);
     }
 
-    @Override
-    public void setToolTipText(String text) {
-        toolTipText = text;
-        final String disabledReason0 = disabledReason;
-        if (disabledReason0 != null) {
-            text = text + "<br>" + disabledReason0;
-        }
-        if (enableAccessMode.getAccessType() != ConfigData.AccessType.NEVER) {
-            final boolean accessible =
-                     Tools.getConfigData().isAccessible(enableAccessMode);
-            if (!accessible) {
-                text = text + "<br>" + getDisabledTooltip();
-            }
-        }
-        component.setToolTipText("<html>" + text + "</html>");
-    }
-
     /** Sets combo box editable. */
     @Override
     public void setEditable(final boolean editable) {
@@ -152,14 +141,17 @@ public final class Label extends Widget {
      */
     @Override
     public String getStringValue() {
-        return o.toString();
+        final Object o = getValue();
+        if (o == null) {
+            return "";
+        }
+        return getValue().toString();
     }
 
     /** Returns value, that use chose in the combo box or typed in. */
     @Override
     public Object getValue() {
-        value = ((JLabel) comp).getText();
-        return value;
+        return ((JLabel) getComponent()).getText();
     }
 
     /** Clears the combo box. */
@@ -171,13 +163,6 @@ public final class Label extends Widget {
     @Override
     boolean isEditable() {
         return false;
-    }
-
-    /** Sets item/value in the component and waits till it is set. */
-    private void setValueAndWait0(final Object item) {
-        mValueWriteLock.lock();
-        ((JLabel) comp).setText((String) item);
-        mValueWriteLock.unlock();
     }
 
     /** Sets selected index. */
@@ -194,107 +179,11 @@ public final class Label extends Widget {
     /** Selects part after first '*' in the ip. */
     @Override
     public void selectSubnet() {
-        case LABELFIELD:
     }
 
     @Override
     public void addListeners(final WidgetListener wl) {
-        widgetListeners.add(wl);
-        JComponent comp;
-        if (fieldButton == null) {
-            comp = component;
-        } else {
-            comp = componentPart;
-        }
-    }
-
-    /**
-     * Sets background of the component depending if the value is the same
-     * as its default value and if it is a required argument.
-     * Must be called after combo box was already added to some panel.
-     *
-     * It also disables, hides the component depending on the access type.
-     * TODO: rename the function
-     */
-    public void setBackground(final String defaultLabel,
-                              final Object defaultValue,
-                              final String savedLabel,
-                              final Object savedValue,
-                              final boolean required) {
-        if (getParent() == null) {
-            return;
-        }
-        JComponent comp;
-        if (fieldButton == null) {
-            comp = component;
-        } else {
-            comp = componentPart;
-        }
-        final Object value = getValue();
-        String labelText = null;
-        if (savedLabel != null) {
-            labelText = label.getText();
-        }
-
-        final Color backgroundColor = getParent().getBackground();
-        final Color compColor = Color.WHITE;
-        if (!Tools.areEqual(value, savedValue)
-            || (savedLabel != null && !Tools.areEqual(labelText, savedLabel))) {
-            if (label != null) {
-                Tools.debug(this, "changed label: " + labelText + " != "
-                                   + savedLabel, 1);
-                Tools.debug(this, "changed: " + value + " != "
-                                         + savedValue, 1);
-                /*
-                   Tools.printStackTrace("changed: " + value + " != "
-                                         + savedValue);
-                 */
-                label.setForeground(CHANGED_VALUE_COLOR);
-            }
-        } else if (Tools.areEqual(value, defaultValue)
-                   && (savedLabel == null
-                       || Tools.areEqual(labelText, defaultLabel))) {
-            if (label != null) {
-                label.setForeground(DEFAULT_VALUE_COLOR);
-            }
-        } else {
-            if (label != null) {
-                label.setForeground(SAVED_VALUE_COLOR);
-            }
-        }
-        setBackground(backgroundColor);
-        switch(type) {
-            case LABELFIELD:
-                comp.setBackground(backgroundColor);
-                break;
-            case TEXTFIELD:
-                /* change color possibly set by wrongValue() */
-                comp.setBackground(compColor);
-                break;
-            case PASSWDFIELD:
-                comp.setBackground(compColor);
-                break;
-            case COMBOBOX:
-                setBackground(Color.WHITE);
-                break;
-            case RADIOGROUP:
-                comp.setBackground(backgroundColor);
-                mComponentsReadLock.lock();
-                for (final JComponent c : componentsHash.values()) {
-                    c.setBackground(backgroundColor);
-                }
-                mComponentsReadLock.unlock();
-                break;
-            case CHECKBOX:
-                comp.setBackground(backgroundColor);
-                break;
-            case TEXTFIELDWITHUNIT:
-                textFieldPart.setBackground(Color.WHITE);
-                break;
-            default:
-                /* error */
-        }
-        processAccessMode();
+        getWidgetListeners().add(wl);
     }
 
     /** Requests focus if applicable. */
@@ -310,13 +199,13 @@ public final class Label extends Widget {
     /** Sets background color. */
     @Override
     public void setBackgroundColor(final Color bg) {
-        comp.setBackground(bg);
+        getComponent().setBackground(bg);
     }
 
     /** Returns item at the specified index. */
     @Override
     Object getItemAt(final int i) {
-        return component;
+        return getComponent();
     }
 
     /** Cleanup whatever would cause a leak. */

@@ -23,6 +23,7 @@ package lcmc.gui.resources;
 
 import lcmc.gui.Browser;
 import lcmc.gui.Widget;
+import lcmc.gui.Label;
 import lcmc.utilities.ButtonCallback;
 import lcmc.utilities.MyButton;
 import lcmc.utilities.Tools;
@@ -687,15 +688,10 @@ public abstract class EditableInfo extends Info {
         if (type == Widget.Type.TEXTFIELDWITHUNIT) {
             units = getUnits();
         }
+        Widget paramWi;
         if (isCheckBox(param)) {
             type = Widget.Type.CHECKBOX;
-        } else if (isTimeType(param)) {
-            type = Widget.Type.TEXTFIELDWITHUNIT;
-            units = getTimeUnits();
-        } else if (isLabel(param)) {
-            type = Widget.Type.LABELFIELD;
-        }
-        final Widget paramWi = new Widget(
+            paramWi = new Widget(
                                       initValue,
                                       getPossibleChoices(param),
                                       units,
@@ -706,6 +702,46 @@ public abstract class EditableInfo extends Info {
                                       new AccessMode(
                                         getAccessType(param),
                                         isEnabledOnlyInAdvancedMode(param)));
+        } else if (isTimeType(param)) {
+            type = Widget.Type.TEXTFIELDWITHUNIT;
+            units = getTimeUnits();
+            paramWi = new Widget(
+                                      initValue,
+                                      getPossibleChoices(param),
+                                      units,
+                                      type,
+                                      regexp,
+                                      width,
+                                      abbreviations,
+                                      new AccessMode(
+                                        getAccessType(param),
+                                        isEnabledOnlyInAdvancedMode(param)));
+        } else if (isLabel(param)) {
+            type = Widget.Type.LABELFIELD;
+            paramWi = new Label( initValue,
+                                      getPossibleChoices(param),
+                                      units,
+                                      type,
+                                      regexp,
+                                      width,
+                                      abbreviations,
+                                      new AccessMode(
+                                        getAccessType(param),
+                                        isEnabledOnlyInAdvancedMode(param)),
+                                      null);
+        } else {
+            paramWi = new Widget(
+                                      initValue,
+                                      getPossibleChoices(param),
+                                      units,
+                                      type,
+                                      regexp,
+                                      width,
+                                      abbreviations,
+                                      new AccessMode(
+                                        getAccessType(param),
+                                        isEnabledOnlyInAdvancedMode(param)));
+        }
         widgetAdd(param, prefix, paramWi);
         paramWi.setEditable(true);
         return paramWi;

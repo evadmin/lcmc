@@ -92,7 +92,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @version $Id$
  *
  */
-public final class Widget extends JPanel {
+public class Widget extends JPanel {
     /** Widget type. */
     public enum Type { LABELFIELD, TEXTFIELD, PASSWDFIELD, COMBOBOX,
                        RADIOGROUP, CHECKBOX, TEXTFIELDWITHUNIT };
@@ -820,19 +820,18 @@ public final class Widget extends JPanel {
         final Object o = getValue();
         if (o == null) {
             return "";
-        } else {
-            if (type == Type.TEXTFIELDWITHUNIT) {
-                final Object o0 = ((Object[]) o)[0];
-                final Object o1 = ((Object[]) o)[1];
-                String v = o0.toString();
-                if (v != null && !"".equals(v) && o1 != null
-                    && o1 instanceof Unit) {
-                    v += ((Unit) o1).getShortName();
-                }
-                return v;
-            } else {
-                return o.toString();
+        }
+        if (type == Type.TEXTFIELDWITHUNIT) {
+            final Object o0 = ((Object[]) o)[0];
+            final Object o1 = ((Object[]) o)[1];
+            String v = o0.toString();
+            if (v != null && !"".equals(v) && o1 != null
+                && o1 instanceof Unit) {
+                v += ((Unit) o1).getShortName();
             }
+            return v;
+        } else {
+            return o.toString();
         }
     }
 
@@ -1862,5 +1861,19 @@ public final class Widget extends JPanel {
     /** Sets reason why it is disabled. */
     public void setDisabledReason(final String disabledReason) {
         this.disabledReason = disabledReason;
+    }
+
+    /** Returns component. */
+    public JComponent getComponent() {
+        if (fieldButton == null) {
+            return component;
+        } else {
+            return componentPart;
+        }
+    }
+
+    /** Returns widget listeners. */
+    public List<WidgetListener> getWidgetListeners() {
+        return widgetListeners;
     }
 }
